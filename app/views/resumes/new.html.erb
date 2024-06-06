@@ -1,0 +1,13 @@
+<%= form_with model: @resume, local: true do |form| %>
+  <p>
+    <%= form.label :title %><br>
+    <%= form.text_field :title %>
+  </p>
+  <p>
+    <%= form.label :file %><br>
+    <%= form.file_field :file %>
+  </p>
+  <p>
+    <%= form.submit %>
+  </p>
+<% end %>
