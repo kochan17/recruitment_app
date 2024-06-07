@@ -11,6 +11,19 @@ class Resume < ApplicationRecord
     end
   end
 
+  def summarize_text
+    text = extract_text
+    client = OpenAI::Client.new
+    response = client.completions(
+      parameters: {
+        model: "gpt-4o"
+        prompt: "以下のテキストを要約してください:\n\n#{text}",
+        max_tokens: 150
+      }
+    )
+    response['choices'][0]['text'].strip
+  end
+
   private
 
   def extract_text_from_pdf

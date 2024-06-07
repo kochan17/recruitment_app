@@ -14,7 +14,7 @@ class ResumesController < ApplicationController
 
   def show
     @resume = Resume.find(params[:id])
-    @text = @resume.extract_text
+    @summary = @resume.summarize_text
   end
 
   private
