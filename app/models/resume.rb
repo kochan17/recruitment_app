@@ -1,5 +1,9 @@
+# app/models/resume.rb
 class Resume < ApplicationRecord
   has_one_attached :file
+  has_many_attached :photos
+
+  after_save :extract_faces
 
   def extract_text
     if file.content_type == 'application/pdf'
@@ -41,8 +45,7 @@ class Resume < ApplicationRecord
     上記のアプリは、このアプリのことです。
 
     # 依頼
-    - アップロードされたファイルから以下の{# 情報}を分析して出力してください。
-    - 口調は「である調」にしてください。
+    アップロードされたファイルから以下の情報を分析し、各項目を10段階で評価してください。また、総合評価も行ってください。
 
     # 情報
     1. 名前
@@ -51,6 +54,8 @@ class Resume < ApplicationRecord
     4. 実績
     5. 弱み
     6. 性格
+    7. 各項目の10段階評価
+    8. 総合評価
 
     テキスト:
     #{text}
@@ -64,14 +69,22 @@ class Resume < ApplicationRecord
       strengths: extract_section(response, "強み"),
       achievements: extract_section(response, "実績"),
       weaknesses: extract_section(response, "弱み"),
-      personality: extract_section(response, "性格")
+      personality: extract_section(response, "性格"),
+      strengths_score: extract_score(response, "強み"),
+      achievements_score: extract_score(response, "実績"),
+      personality_score: extract_score(response, "性格")
     }
-    result
+    result.merge({ overall_rating: make_overall_rating(result) })
   end
 
   def extract_section(response, section_name)
     match = response.match(/#{section_name}:?\s*(.*?)(?:\n(?:\d+\.|$)|$)/m)
     match ? match[1].strip : ""
+  end
+
+  def extract_score(response, section_name)
+    match = response.match(/#{section_name}評価:\s*(\d+)/)
+    match ? match[1].to_i : 0
   end
 
   def make_verdict(parsed_response)
@@ -83,15 +96,71 @@ class Resume < ApplicationRecord
     end
   end
 
-  def extract_text_from_pdf
-    reader = PDF::Reader.new(file.download)
-    text = reader.pages.map(&:text).join(" ")
-    text
+  def make_overall_rating(parsed_response)
+    average_score = (parsed_response[:strengths_score] + parsed_response[:achievements_score] + parsed_response[:personality_score]) / 3.0
+    if average_score >= 7
+      "A"
+    elsif average_score >= 5
+      "B"
+    else
+      "C"
+    end
   end
 
-  def extract_text_from_docx
-    doc = Docx::Document.open(file.download)
-    text = doc.paragraphs.map(&:to_s).join(" ")
-    text
+  def extract_faces
+    file_path = ActiveStorage::Blob.service.send(:path_for, file.key)
+    extract_images_from_file(file_path).each do |image_path|
+      detect_faces(image_path).each do |face_image_path|
+        photos.attach(io: File.open(face_image_path), filename: File.basename(face_image_path))
+        File.delete(face_image_path)  # Clean up face images after attaching
+      end
+      File.delete(image_path)  # Clean up extracted images
+    end
+  end
+
+  def extract_images_from_file(file_path)
+    images = []
+    if file.content_type == 'application/pdf'
+      images = extract_images_from_pdf(file_path)
+    elsif file.content_type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      images = extract_images_from_docx(file_path)
+    else
+      raise "Unsupported file type"
+    end
+    images
+  end
+
+  def extract_images_from_pdf(pdf_path)
+    images = []
+    MiniMagick::Tool::Magick.new do |magick|
+      magick << pdf_path
+      magick << "output.png"
+    end
+    Dir.glob("output-*.png") { |image| images << image }
+    images
+  end
+
+  def extract_images_from_docx(docx_path)
+    images = []
+    doc = Docx::Document.open(docx_path)
+    doc.images.each_with_index do |image, index|
+      image_path = "image-#{index}.png"
+      File.open(image_path, "wb") { |file| file.write(image.data) }
+      images << image_path
+    end
+    images
+  end
+
+  def detect_faces(image_path)
+    face_images = []
+    image = MiniMagick::Image.open(image_path)
+    image.combine_options do |c|
+      c.gravity 'center'
+      c.crop '256x256+0+0'
+    end
+    face_image_path = "face_#{File.basename(image_path)}"
+    image.write(face_image_path)
+    face_images << face_image_path
+    face_images
   end
 end

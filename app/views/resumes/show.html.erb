@@ -4,11 +4,20 @@
 <ul>
   <li><strong>名前:</strong> <%= @analysis[:name] %></li>
   <li><strong>経歴:</strong> <%= @analysis[:background] %></li>
-  <li><strong>強み:</strong> <%= @analysis[:strengths] %></li>
-  <li><strong>実績:</strong> <%= @analysis[:achievements] %></li>
+  <li><strong>強み:</strong> <%= @analysis[:strengths] %> (評価: <%= @analysis[:strengths_score] %>/10)</li>
+  <li><strong>実績:</strong> <%= @analysis[:achievements] %> (評価: <%= @analysis[:achievements_score] %>/10)</li>
   <li><strong>弱み:</strong> <%= @analysis[:weaknesses] %></li>
-  <li><strong>性格:</strong> <%= @analysis[:personality] %></li>
+  <li><strong>性格:</strong> <%= @analysis[:personality] %> (評価: <%= @analysis[:personality_score] %>/10)</li>
   <li><strong>判定結果:</strong> <%= @analysis[:verdict] %></li>
+  <li><strong>総合評価:</strong> <%= @analysis[:overall_rating] %></li>
 </ul>
+
+<% if @resume.photos.attached? %>
+  <p><strong>顔写真:</strong><br>
+  <% @resume.photos.each do |photo| %>
+    <%= image_tag photo %><br>
+  <% end %>
+  </p>
+<% end %>
 
 <%= link_to '戻る', root_path %>
