@@ -68,3 +68,4 @@ end
 gem 'activestorage'
 gem 'pdf-reader'
 gem 'docx'
+gem 'ruby-openai'

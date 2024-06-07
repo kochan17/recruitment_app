@@ -6,9 +6,9 @@ class ResumesController < ApplicationController
   def create
     @resume = Resume.new(resume_params)
     if @resume.save
-      redirect_to @resume, notice: 'Resume was successfully uploaded.'
+      redirect_to @resume
     else
-      render :new
+      render :new, status: :unprocessable_entity
     end
   end
 
