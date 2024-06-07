@@ -1,13 +1,9 @@
 <%= form_with model: @resume, local: true do |form| %>
   <p>
-    <%= form.label :title %><br>
-    <%= form.text_field :title %>
-  </p>
-  <p>
-    <%= form.label :file %><br>
+    <%= form.label :file, "ファイルを選択" %><br>
     <%= form.file_field :file %>
   </p>
   <p>
-    <%= form.submit %>
+    <%= form.submit "Create Resume" %>
   </p>
 <% end %>

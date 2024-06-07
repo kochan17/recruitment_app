@@ -8,18 +8,18 @@ class ResumesController < ApplicationController
     if @resume.save
       redirect_to @resume
     else
-      render :new, status: :unprocessable_entity
+      render :new
     end
   end
 
   def show
     @resume = Resume.find(params[:id])
-    @summary = @resume.summarize_text
+    @analysis = @resume.analyze_text
   end
 
   private
 
   def resume_params
-    params.require(:resume).permit(:title, :file)
+    params.require(:resume).permit(:file)
   end
 end

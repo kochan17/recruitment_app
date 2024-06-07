@@ -1,8 +1,14 @@
 <p>
-  <strong>Title:</strong>
-  <%= @resume.title %>
+  <strong>Analysis:</strong>
 </p>
-<p>
-  <strong>Extracted Text:</strong>
-  <%= @summary %>
-</p>
+<ul>
+  <li><strong>名前:</strong> <%= @analysis[:name] %></li>
+  <li><strong>経歴:</strong> <%= @analysis[:background] %></li>
+  <li><strong>強み:</strong> <%= @analysis[:strengths] %></li>
+  <li><strong>実績:</strong> <%= @analysis[:achievements] %></li>
+  <li><strong>弱み:</strong> <%= @analysis[:weaknesses] %></li>
+  <li><strong>性格:</strong> <%= @analysis[:personality] %></li>
+  <li><strong>判定結果:</strong> <%= @analysis[:verdict] %></li>
+</ul>
+
+<%= link_to '戻る', root_path %>

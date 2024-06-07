@@ -40,7 +40,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_06_130917) do
   end
 
   create_table "resumes", charset: "utf8", force: :cascade do |t|
-    t.string "title"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
